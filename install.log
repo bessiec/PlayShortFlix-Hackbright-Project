@@ -1,0 +1,29 @@
+(venv)dhcp93:Hackbright_Project oysteromelette$ pip install flask-whooshalchemy
+Downloading/unpacking flask-whooshalchemy
+  Could not find a version that satisfies the requirement flask-whooshalchemy (from versions: 0.5a, 0.3a.macosx-10.6-x86_64, 0.2a, v0.52a, 0.1a, 0.54a, 0.4a, 0.53a, 0.51a, 0.55a)
+Cleaning up...
+No distributions matching the version for flask-whooshalchemy
+Storing complete log in /Users/oysteromelette/.pip/pip.log
+
+(venv)dhcp93:Hackbright_Project oysteromelette$ pip install flask-babel
+Downloading/unpacking flask-babel
+  Downloading Flask-Babel-0.8.tar.gz (44kB): 44kB downloaded
+  Running setup.py egg_info for package flask-babel
+    
+    warning: no previously-included files matching '*.pyc' found under directory 'tests'
+    warning: no previously-included files matching '*.pyo' found under directory 'tests'
+    warning: no previously-included files matching '*.pyc' found under directory 'docs'
+    warning: no previously-included files matching '*.pyo' found under directory 'docs'
+    no previously-included directories found matching 'docs/_build'
+    no previously-included directories found matching 'docs/_themes/.git'
+Requirement already satisfied (use --upgrade to upgrade): Flask in ./venv/lib/python2.7/site-packages (from flask-babel)
+Downloading/unpacking Babel (from flask-babel)
+  Downloading Babel-0.9.6.tar.gz (1.8MB): 1.8MB downloaded
+  Running setup.py egg_info for package Babel
+    
+Downloading/unpacking pytz (from flask-babel)
+  Could not find a version that satisfies the requirement pytz (from flask-babel) (from versions: 2009r, 2008b, 2009f, 2008c, 2007g, 2011g, 2005m, 2011e, 2007f, 2011k, 2007k, 2006j, 2008h, 2008i, 2011e, 2008a, 2009e, 2006g, 2011j, 2010l, 2005m, 2008i, 2005k, 2008g, 2007c, 2007i, 2009l, 2009r, 2006j, 2011k, 2007d, 2006p, 2009i, 2009u, 2007i, 2009f, 2010g, 2008h, 2009a, 2007g, 2011e, 2006p, 2012b, 2010k, 2005r, 2007f, 2009l, 2009p, 2008c, 2009j, 2008g, 2010g, 2010h, 2011h, 2010k, 2007c, 2007d, 2011d, 2009l, 2011c, 2008a, 2005m, 2007k, 2009n, 2011d, 2010o, 2013b, 2012h, 2010e, 2012c, 2012d, 2012f, 2011n, 2011b, 2011j, 2008c, 2012j, 2007k, 2009f, 2009d, 2010e, 2010b, 2013b, 2011d, 2009p, 2008h, 2005r, 2009i, 2009n, 2009a, 2010k, 2008g, 2006g, 2008b, 2012c, 2009i, 2007g, 2012c, 2010h, 2011n, 2012g, 2007d, 2008a, 2009u, 2012g, 2010o, 2006p, 2010b, 2009u, 2012d, 2011k, 2012f, 2009a, 2007f, 2011h, 2010l, 2009j, 2011g, 2009g, 2009g, 2005r, 2011c, 2012g, 2009g, 2012d, 2009j, 2010o, 2007c, 2010g, 2006g, 2009d, 2010h, 2005k, 2006j, 2010b, 2009n, 2011g, 2011c, 2012b, 2009e, 2009d, 2011j, 2007i, 2012j, 2010l, 2009r, 2012h, 2010e, 2009p, 2008i, 2012f, 2009e, 2012b, 2011h, 2005k, 2008b, 2011n, 2012j, 2013b, 2004b)
+Cleaning up...
+No distributions matching the version for pytz (from flask-babel)
+Storing complete log in /Users/oysteromelette/.pip/pip.log
+
