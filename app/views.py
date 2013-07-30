@@ -1,6 +1,22 @@
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import scoped_session, sessionmaker
 from flask import render_template, flash, redirect
 from app import app
 from forms import LoginForm
+from app import model
+import os
+from flask.ext.login import LoginManager
+from flask.ext.openid import openid
+from config import basedir
+
+
+app = Flask(__name__)
+app.config.from_object('config')
+db = SQLAlchemy(app)
+
+lm = LoginManager()
+lm.init_app(app)
+oid = OPENID(app.os.path.join(basedir, 'tmp'))
 
 @app.route('/')
 def index():
@@ -39,4 +55,10 @@ def login():
 #The validate on submit method does all the form processing work.  If it fails to validate, the function will return false to prompt user to correct.
 #The flash function is a quick way to show a message on the next page presented to a user. 
 
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
+    
 
+from app import app
+app.run(debug = True)

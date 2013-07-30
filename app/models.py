@@ -1,17 +1,86 @@
-from app import db
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, DateTime, SmallInteger, Text
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship, backref
+
+
+engine = create_engine("sqlite:///app.db", echo=True)
+session = scoped_session(sessionmaker(bind= engine,
+                                        autocommit= False,
+                                        autoflush = False))
+
+
+Base = declarative_base()
+Base.query = session.query_property()
 
 ROLE_USER = 0
 ROLE_ADMIN = 1
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    nickname = db.Column(db.String(64), index = True, unique = True)
-    email = db.Column(db.String(120), index = True, unique = True)
-    role = db.Column(db.SmallInteger, default = ROLE_USER)
 
+class User(Base):
+#users defined on database structure for playshortflix and for Flask megatutorial
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key = True)
+    nickname = Column(String(64), unique = True)
+    email = Column(String(120), unique = True)
+    role = Column(SmallInteger, default = ROLE_USER)
+    posts = relationship('Post', backref = 'author', lazy = 'dynamic')
+    # playlists = relationship('Playlists', backref = 'user.id'), lazy = 'dynamic')
+    # rating = Column(Integer, unique = False)
+    # times_viewed = Column(Integer, unique = False)
+    # movies_favorited = Column(Integer, unique = False)
+    # bearer_token = Column(String(120), unique = True)
+    # twitter = Column(String(120), unique = True)
+ 
     def __repr__(self):
         return '<User %r>' % (self.nickname)
 
-#fields created as instances of db.Column class, which takes a field type as an argument. 
-#__repr tells Python how to print objects of this class 
 
+class Post(Base):
+    __tablename__ = "posts"
+
+    id = Column(Integer, primary_key = True)
+    body = Column(String(140)
+    timestamp = Column(DateTime)
+    user_id = Column(Integer, ForeignKey('user.id'))
+
+    def __repr__(self):
+        return '<Post %r>' % (self.body)
+
+# class Playlists(Base):
+#     __tablename__ = "playlists"
+
+#     id = Column(Integer, primary_key = True)
+#     user_id = Column(Integer, ForeignKey('user.id'))
+#     multiple_movies = Column(String(140), unique = False)
+#     multiple_movies = Column(String(140), unique = False)
+#     order_of_plays = Column(Integer, unique = False)
+#     playlist_disqus = Column(String(140), unique = False)
+
+#     # user = relationship("User",
+#     #     backref=backref("playlists", order_by=user_id))
+
+# class Movies(Base):
+#     id = Column(Integer, primary_key = True)
+#     __tablename__ = "movies"
+#     url = Column(String(140))
+#     link_type = Column(String(140))
+#     description = Column(String(140))
+#     length = Column(String(140))
+#     source = Column(String(140))
+#     theme = Column(String(140))
+#     festival = Column(String(140))
+#     director = Column(String(140))
+#     product = Column(String(140))
+#     actor = Column(String(140))
+#     movie_disqus = Column(String(140))
+
+def main():
+    """ In case this is needed """
+    pass
+
+if __name__ == "__main__":
+    main()
