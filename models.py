@@ -28,13 +28,13 @@ class User(Base):
     email = Column(String(120), unique = True)
     role = Column(SmallInteger, default = ROLE_USER)
     posts = relationship('Post', backref = 'author', lazy = 'dynamic')
-    playlists = Column(String(120), unique = False)
+    playlists = relationship('Playlists', backref = 'users.id', lazy = 'dynamic')
     rating = Column(Integer, unique = False)
     times_viewed = Column(Integer, unique = False)
     movies_favorited = Column(Integer, unique = False)
     bearer_token = Column(String(120), unique = True)
-    twtter = Column(String(120), unique = True)
-
+    twitter = Column(String(120), unique = True)
+ 
     def __repr__(self):
         return '<User %r>' % (self.nickname)
 
@@ -43,44 +43,40 @@ class Post(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key = True)
-    body = Column(String(140), unique = False)
+    body = Column(String(140))
     timestamp = Column(DateTime)
+    user_id = Column(Integer, ForeignKey('users.id'))
 
     def __repr__(self):
         return '<Post %r>' % (self.body)
 
-class Playlists(Base):
-    __tablename__ = "playlists"
+# class Playlists(Base):
+#     __tablename__ = "playlists"
 
-    id = Column(Integer, primary_key = True)
-    muliple_movies = Column(String(140), unique = False)
-    order_of_plays = Column(Integer, unique = False)
-    playlist_disqus = Column(String(140), unique = False)
+#     id = Column(Integer, primary_key = True)
+#     user_id = Column(Integer, ForeignKey('user.id'))
+#     multiple_movies = Column(String(140), unique = False)
+#     multiple_movies = Column(String(140), unique = False)
+#     order_of_plays = Column(Integer, unique = False)
+#     playlist_disqus = Column(String(140), unique = False)
 
-    user = relationship("User",
-        backref=backref("playlists", order_by=id))
+#     # user = relationship("User",
+#     #     backref=backref("playlists", order_by=user_id))
 
-    movie = relationship("Movies",
-        backref=backref("playlists", order_by=id))
-
-    post = relationship("Post",
-        backref=backref("playlists", order_by=id))
-
-
-class Movies(Base):
-    id = Column(Integer, primary_key = True)
-    __tablename__ = "movies"
-    url = Column(String(140))
-    link_type = Column(String(140))
-    description = Column(String(140))
-    length = Column(String(140))
-    source = Column(String(140))
-    theme = Column(String(140))
-    festival = Column(String(140))
-    director = Column(String(140))
-    product = Column(String(140))
-    actor = Column(String(140))
-    movie_disqus = Column(String(140))
+# class Movies(Base):
+#     id = Column(Integer, primary_key = True)
+#     __tablename__ = "movies"
+#     url = Column(String(140))
+#     link_type = Column(String(140))
+#     description = Column(String(140))
+#     length = Column(String(140))
+#     source = Column(String(140))
+#     theme = Column(String(140))
+#     festival = Column(String(140))
+#     director = Column(String(140))
+#     product = Column(String(140))
+#     actor = Column(String(140))
+#     movie_disqus = Column(String(140))
 
 def main():
     """ In case this is needed """
