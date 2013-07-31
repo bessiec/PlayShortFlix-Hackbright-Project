@@ -21,7 +21,7 @@ oid = OpenID(app, os.path.join(basedir, 'tmp'))
 
 
 #CSRF_ENABLED setting activates the cross-site request forgery prevention.
-#Secret key is used to create a cryptographic toekn that is used to validate a form.
+#Secret key is used to create a cryptographic token that is used to validate a form.
 
 OPENID_PROVIDERS = [
     { 'name': 'Google', 'url': 'https://www.google.com/accounts/o8/id' },
@@ -83,8 +83,22 @@ def login():
     return render_template('login.html', 
         title = 'Sign In',
         form = form,
-        providers = app.config['OPENID_PROVIDERS'])
+        providers = OPENID_PROVIDERS)
 
+@app.route('user/<nickname>')
+@login_required
+def user(nickname):
+    user = User.query.filter_by(nickname = nickname).first()
+    if user == None:
+        flash('User ' + nickname + ' not found.')
+        return redirect(url_for('index'))
+    posts = [
+        { 'author': user, 'body': 'HELLO WORLD!' },
+        { 'author': user, 'body': "I'm Rick James " }
+    ]
+    return render_template('user.html',
+        user = user.
+        posts = posts)
 
 @oid.after_login
 def after_login(resp):
@@ -97,8 +111,8 @@ def after_login(resp):
         if nickname is None or nickname == "":
             nickname = resp.email.split('@')[0]
         user = User(nickname = nickname, email = resp.email, role = ROLE_USER)
-        db.session.add(user)
-        db.session.commit()
+        session.add(user)
+        session.commit()
     remember_me = False
     if 'remember_me' in session:
         remember_me = session['remember_me']
