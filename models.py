@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, SmallInteger, Text
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref
+from hashlib import md5
 
 
 engine = create_engine("sqlite:///app.db", echo=True)
@@ -28,15 +29,32 @@ class User(Base):
     email = Column(String(120), unique = True)
     role = Column(SmallInteger, default = ROLE_USER)
     posts = relationship('Post', backref = 'author', lazy = 'dynamic')
-    playlists = relationship('Playlists', backref = 'users.id', lazy = 'dynamic')
-    rating = Column(Integer, unique = False)
-    times_viewed = Column(Integer, unique = False)
-    movies_favorited = Column(Integer, unique = False)
-    bearer_token = Column(String(120), unique = True)
-    twitter = Column(String(120), unique = True)
- 
+    about_me = Column(String(140))
+    last_seen = Column(DateTime)
+    # playlists = relationship('Playlists', backref = 'users.id', lazy = 'dynamic')
+    # rating = Column(Integer, unique = False)
+    # times_viewed = Column(Integer, unique = False)
+    # movies_favorited = Column(Integer, unique = False)
+    # bearer_token = Column(String(120), unique = True)
+    # twitter = Column(String(120), unique = True)
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return unicode(self.id)
+        
     def __repr__(self):
-        return '<User %r>' % (self.nickname)
+        return '<User %r>' % (self.nickname)    
+
+    def avatar(self, size):
+        return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
 
 
 class Post(Base):
@@ -60,8 +78,8 @@ class Post(Base):
 #     order_of_plays = Column(Integer, unique = False)
 #     playlist_disqus = Column(String(140), unique = False)
 
-#     # user = relationship("User",
-#     #     backref=backref("playlists", order_by=user_id))
+    # user = relationship("User",
+    #     backref=backref("playlists", order_by=user_id))
 
 # class Movies(Base):
 #     id = Column(Integer, primary_key = True)
@@ -77,6 +95,12 @@ class Post(Base):
 #     product = Column(String(140))
 #     actor = Column(String(140))
 #     movie_disqus = Column(String(140))
+
+# # joining
+# class Playlist_movies(Base)
+#     playlist_id
+#     movies_id 
+#     order_of_plays
 
 def main():
     """ In case this is needed """
