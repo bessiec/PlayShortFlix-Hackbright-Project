@@ -38,6 +38,19 @@ class User(Base):
     # bearer_token = Column(String(120), unique = True)
     # twitter = Column(String(120), unique = True)
 
+    @staticmethod
+    def make_unique_nickname(nickname):
+        if User.query.filter_by(nickname = nickname).first() == None:
+            return nickname
+        version = 2
+        while True:
+            new_nickname = nickname + str(version)
+            if User.query.filter_by(nickname = new_nickname).first() == None:
+                break
+            version += 1
+        return new_nickname
+
+
     def is_authenticated(self):
         return True
 

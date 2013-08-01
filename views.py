@@ -8,6 +8,7 @@ from flask import Flask, render_template, flash, redirect, session, url_for, req
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from models import User, ROLE_USER, ROLE_ADMIN
 from datetime import datetime
+import models
 
 app = Flask(__name__)
 
@@ -41,6 +42,15 @@ SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 #The SQLALCHEMY_DATABASE_URI is the path of our database file.
 #The SQLALCHEMY_MIGRATE_REPO is the folder in which we will store the SQLAlchemy-migrate data files
 
+@app.errorhandler(404)
+def internal_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    models.session.rollback()
+    return render_template('500.html'), 500
+
 
 @lm.user_loader
 def load_user(id):
@@ -50,10 +60,10 @@ def load_user(id):
 @app.before_request
 def before_request():
     g.user = current_user
-    # if g.user.is_authenticated():
-    #     g.user.last_seen = datetime.utcnow()
-    #     session.add(g.user)
-    #     session.commit()
+    if g.user.is_authenticated():
+        g.user.last_seen = datetime.utcnow()
+        models.session.add(g.user)
+        models.session.commit()
 
 @app.route('/')
 @app.route('/index')
@@ -92,12 +102,12 @@ def login():
 @app.route('/edit', methods = ['GET', 'POST'])
 @login_required
 def edit():
-    form = EditForm()
+    form = EditForm(g.user.nickname)
     if form.validate_on_submit():
         g.user.nickname = form.nickname.data
         g.user.about_me = form.about_me.data
-        session.add(g.user)
-        session.commit()
+        models.session.add(g.user)
+        models.session.commit()
         flash('Your changes have been saved.')
         return redirect(url_for('edit'))
     else:
@@ -116,9 +126,10 @@ def after_login(resp):
         nickname = resp.nickname
         if nickname is None or nickname == "":
             nickname = resp.email.split('@')[0]
+        nickname = User.make_unique_nickname(nickname)
         user = User(nickname = nickname, email = resp.email, role = ROLE_USER)
-        session.add(user)
-        session.commit()
+        models.session.add(user)
+        models.session.commit()
 
 # Do I need to take out these dbs as well?  
 
@@ -147,11 +158,11 @@ def user(nickname):
 @app.route('/logout')
 def logout():
     logout_user()
-    return direct(url_for('index'))
+    return redirect(url_for('index'))
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
-    session.remove()
+    models.session.remove()
     
 
 
