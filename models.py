@@ -2,10 +2,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, SmallInteger, Text
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Table
 from sqlalchemy.orm import relationship, backref
 from hashlib import md5
-
 
 engine = create_engine("sqlite:///app.db", echo=True)
 session = scoped_session(sessionmaker(bind= engine,
@@ -19,6 +18,26 @@ Base.query = session.query_property()
 ROLE_USER = 0
 ROLE_ADMIN = 1
 
+followers = Table('user_followers', Base.metadata,
+    Column('follower_id', Integer, ForeignKey('users.id'), primary_key=True),
+    Column('followed_id', Integer, ForeignKey('users.id'), primary_key=True)
+)
+
+# class Users_Followers(Base):
+#     __tablename__ = "user_followers"
+
+#     id = Column(Integer, primary_key = True)
+#     follower_id = Column(Integer, ForeignKey('users.id'))
+#     followed_id = Column(Integer, ForeignKey('users.id'))
+
+    # followers = relationship('User',
+    #     primaryjoin = "user_followers.follower_id == users.id",
+    #     # backref=backref("following", order_by=id)
+    #     )
+
+    # followed =  relationship('User',
+    #     primaryjoin = "user_followers.followed_id == users.id",
+    #     backref=backref("followed", order_by=id))
 
 class User(Base):
 #users defined on database structure for playshortflix and for Flask megatutorial
@@ -31,6 +50,15 @@ class User(Base):
     posts = relationship('Post', backref = 'author', lazy = 'dynamic')
     about_me = Column(String(140))
     last_seen = Column(DateTime)
+
+
+    followed = relationship('User', 
+        secondary = followers, 
+        primaryjoin = (followers.c.follower_id == id), 
+        secondaryjoin = (followers.c.followed_id == id), 
+        backref = backref('followers', lazy = 'dynamic'), 
+        lazy = 'dynamic')
+
     # playlists = relationship('Playlists', backref = 'users.id', lazy = 'dynamic')
     # rating = Column(Integer, unique = False)
     # times_viewed = Column(Integer, unique = False)
@@ -69,6 +97,22 @@ class User(Base):
     def avatar(self, size):
         return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
 
+    def follow(self, user):
+        if not self.is_following(user):
+            self.followed.append(user)
+            return self
+            
+    def unfollow(self, user):
+        if self.is_following(user):
+            self.followed.remove(user)
+            return self
+            
+    def is_following(self, user):
+        return self.followed.filter(followers.c.followed_id == user.id).count() > 0
+
+    def followed_posts(self):
+        return Post.query.join(followers, (followers.c.followed_id == Post.user_id)).filter(followers.c.follower_id == self.id).order_by(Post.timestamp.desc())
+
 
 class Post(Base):
     __tablename__ = "posts"
@@ -80,6 +124,7 @@ class Post(Base):
 
     def __repr__(self):
         return '<Post %r>' % (self.body)
+
 
 # class Playlists(Base):
 #     __tablename__ = "playlists"

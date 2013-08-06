@@ -120,7 +120,7 @@ def edit():
 def after_login(resp):
     if resp.email is None or resp.email == "":
         flash('Invalid login. Please try again.')
-        return redirect(url_for('login'))
+        redirect(url_for('login'))
     user = User.query.filter_by(email = resp.email).first()
     if user is None:
         nickname = resp.nickname
@@ -128,8 +128,17 @@ def after_login(resp):
             nickname = resp.email.split('@')[0]
         nickname = User.make_unique_nickname(nickname)
         user = User(nickname = nickname, email = resp.email, role = ROLE_USER)
-        models.session.add(user)
-        models.session.commit()
+        db.session.add(user)
+        db.session.commit()
+        # have the user follow him/herself
+        db.session.add(user.follow(user))
+        db.session.commit()
+    remember_me = False
+    if 'remember_me' in session:
+        remember_me = session['remember_me']
+        session.pop('remember_me', None)
+    login_user(user, remember = remember_me)
+    return redirect(request.args.get('next') or url_for('index'))
 
 # Do I need to take out these dbs as well?  
 
