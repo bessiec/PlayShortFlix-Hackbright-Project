@@ -1,8 +1,10 @@
 import os
 import unittest
+from datetime import datetime, timedelta
 
 import views, models
-from models import User
+from models import User, Post
+
 
 class TestCase(unittest.TestCase):
 	def setUp(self):
@@ -18,9 +20,9 @@ class TestCase(unittest.TestCase):
 
 	def test_avatar(self):
 		u = User(nickname = 'john', email = 'john@example.com')
-        avatar = u.avatar(128)
-        expected = 'http://www.gravatar.com/avatar/d4c74594d841139328695756648b6bd6'
-        assert avatar[0:len(expected)] == expected
+		avatar = u.avatar(128)
+		expected = 'http://www.gravatar.com/avatar/d4c74594d841139328695756648b6bd6'
+		assert avatar[0:len(expected)] == expected
 
 	def test_make_unique_nickname(self):
 		u = User(nickname = 'john', email = 'john@example.com')
@@ -41,22 +43,22 @@ class TestCase(unittest.TestCase):
 		u2 = User(nickname = 'susan', email = 'susan@example.com')
 		u3 = User(nickname = 'mary', email = 'mary@example.com')
 		u4 = User(nickname = 'david', email = 'david@example.com')
-		db.session.add(u1)
-		db.session.add(u2)
-		db.session.add(u3)
-		db.session.add(u4)
+		models.ession.add(u1)
+		model.add(u2)
+		models.session.add(u3)
+		models.session.add(u4)
 		# making four posts
 		utcnow = datetime.utcnow()
 		p1 = Post(body = "post from john", author = u1, timestamp = utcnow + timedelta(seconds = 1))
 		p2 = Post(body = "post from susan", author = u2, timestamp = utcnow + timedelta(seconds = 2))
 		p3 = Post(body = "post from mary", author = u3, timestamp = utcnow + timedelta(seconds = 3))
 		p4 = Post(body = "post from david", author = u4, timestamp = utcnow + timedelta(seconds = 4))
-		db.session.add(p1)
-		db.session.add(p2)
-		db.session.add(p3)
-		db.session.add(p4)
-		db.session.commit()
-		# setup the followers
+		models.session.add(p1)
+		models.session.add(p2)
+		models.session.add(p3)
+		models.session.add(p4)
+		models.session.commit()
+		# setting up followers
 		u1.follow(u1) # john follows himself
 		u1.follow(u2) # john follows susan
 		u1.follow(u4) # john follows david
@@ -65,11 +67,11 @@ class TestCase(unittest.TestCase):
 		u3.follow(u3) # mary follows herself
 		u3.follow(u4) # mary follows david
 		u4.follow(u4) # david follows himself
-		db.session.add(u1)
-		db.session.add(u2)
-		db.session.add(u3)
-		db.session.add(u4)
-		db.session.commit()
+		models.session.add(u1)
+		models.session.add(u2)
+		models.session.add(u3)
+		models.session.add(u4)
+		models.session.commit()
 		# check the followed posts of each user
 		f1 = u1.followed_posts().all()
 		f2 = u2.followed_posts().all()

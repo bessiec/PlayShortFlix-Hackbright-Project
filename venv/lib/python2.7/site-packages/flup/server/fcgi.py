@@ -64,7 +64,7 @@ class WSGIServer(BaseFCGIServer, ThreadedServer):
     def __init__(self, application, environ=None,
                  multithreaded=True, multiprocess=False,
                  bindAddress=None, umask=None, multiplexed=False,
-                 debug=True, roles=(FCGI_RESPONDER,), forceCGI=False, **kw):
+                 debug=False, roles=(FCGI_RESPONDER,), forceCGI=False, **kw):
         """
         environ, if present, must be a dictionary-like object. Its
         contents will be copied into application's environ. Useful
@@ -93,7 +93,7 @@ class WSGIServer(BaseFCGIServer, ThreadedServer):
             if kw.has_key(key):
                 del kw[key]
         ThreadedServer.__init__(self, jobClass=self._connectionClass,
-                                jobArgs=(self,), **kw)
+                                jobArgs=(self, None), **kw)
 
     def _isClientAllowed(self, addr):
         return self._web_server_addrs is None or \
@@ -114,6 +114,7 @@ class WSGIServer(BaseFCGIServer, ThreadedServer):
         ret = ThreadedServer.run(self, sock)
 
         self._cleanupSocket(sock)
+        self.shutdown()
 
         return ret
 

@@ -1,12 +1,12 @@
+import os
+from flask import Flask, render_template, flash, redirect, session, url_for, request, g
+from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
+from flask.ext.openid import OpenID
+from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
-from forms import LoginForm, EditForm
-import os
-from flask.ext.login import LoginManager
-from flask.ext.openid import OpenID
-from flask import Flask, render_template, flash, redirect, session, url_for, request, g
-from flask.ext.login import login_user, logout_user, current_user, login_required
-from models import User, ROLE_USER, ROLE_ADMIN
+from forms import LoginForm, EditForm, PostForm
+from models import User, ROLE_USER, ROLE_ADMIN, Post
 from datetime import datetime
 import models
 
@@ -22,6 +22,8 @@ oid = OpenID(app, os.path.join(basedir, 'tmp'))
 app.csrf_enabled = True
 app.secret_key = "apocalypsenow12343heartofdarkness"
 
+
+POSTS_PER_PAGE = 3 #pagination
 
 #CSRF_ENABLED setting activates the cross-site request forgery prevention.
 #Secret key is used to create a cryptographic token that is used to validate a form.
@@ -65,24 +67,23 @@ def before_request():
         models.session.add(g.user)
         models.session.commit()
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods = ['GET', 'POST'])
+@app.route('/index', methods = ['GET', 'POST'])
+@app.route('/index/<int:page>', methods = ['GET', 'POST'])
 @login_required
-def index():
-    user = g.user
-    posts = [
-        { 
-            'author': { 'nickname': 'John' }, 
-            'body': 'Beautiful day in Portland!' 
-        },
-        { 
-            'author': { 'nickname': 'Susan' }, 
-            'body': 'The Avengers movie was so cool!' 
-        }
-    ]
+def index(page = 1):
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(body = form.post.data, timestamp = datetime.utcnow(), author = g.user)
+        models.session.add(post)
+        models.session.commit()
+        flash('Your post is now live!')
+        return redirect(url_for('index'))
+    posts = g.user.followed_posts()
+    print "POSTS HERE", posts
     return render_template('index.html',
         title = 'Home',
-        user = user,
+        form = form,
         posts = posts)
 
 @app.route('/login', methods = ['GET', 'POST'])
@@ -128,11 +129,11 @@ def after_login(resp):
             nickname = resp.email.split('@')[0]
         nickname = User.make_unique_nickname(nickname)
         user = User(nickname = nickname, email = resp.email, role = ROLE_USER)
-        db.session.add(user)
-        db.session.commit()
+        session.add(user)
+        session.commit()
         # have the user follow him/herself
-        db.session.add(user.follow(user))
-        db.session.commit()
+        session.add(user.follow(user))
+        session.commit()
     remember_me = False
     if 'remember_me' in session:
         remember_me = session['remember_me']
@@ -163,6 +164,67 @@ def user(nickname):
     return render_template('user.html',
         user = user,
         posts = posts)
+
+@oid.after_login
+def after_login(resp):
+    if resp.email is None or resp.email == "":
+        flash('Invalid login.  Please try again.')
+        redirect(url_for('login'))
+    user = User.query.filter_by(email = resp.email).first()
+    if user is None:
+        nickname = resp.nickname
+        if nickname is None or nickname == "":
+            nickname = resp.email.split("@")[0]
+        nickname = User.make_unique_nickname(nickname)
+        user = User(nickname = nickname, email = resp.email, role = ROLE_USER)
+        session.add(user)
+        session.commit()
+        #have the user follow self
+        session.add(user.follow(user))
+        session.commit()
+    remember_me = False
+    if 'remember_me' in session:
+        remember_me = session['remember_me']
+        session.pop('remember_me', None)
+    login_user(user, remember = remember_me)
+    return redirect(request.args.get('next') or url_for('index'))
+
+#functions the follow and unfollow a user
+@app.route('/follow/<nickname>')
+def follow(nickname):
+    user = User.query.filter_by(nickname = nickname).first()
+    if user == None:
+        flash('User ' + nickname + ' not found.')
+        return redirect(url_for('index'))
+    if user == g.user:
+        flash('You can\'t follow yourself!')
+        return redirect(url_for('user', nickname = nickname))
+    u = g.user.follow(user)
+    if u is None:
+        flash('Cannot follow ' + nickname + '.')
+        return redirect(url_for('user', nickname = nickname))
+    session.add(u)
+    session.commit()
+    flash('You are now following ' + nickname + '!')
+    return redirect(url_for('user', nickname = nickname))
+
+@app.route('/unfollow/<nickname>')
+def unfollow(nickname):
+    user = User.query.filter_by(nickname = nickname).first()
+    if user == None:
+        flash('User ' + nickname + ' not found.')
+        return redirect(url_for('index'))
+    if user == g.user:
+        flash('You can\'t unfollow yourself!')
+        return redirect(url_for('user', nickname = nickname))
+    u = g.user.unfollow(user)
+    if u is None:
+        flash('Cannot unfollow ' + nickname + '.')
+        return redirect(url_for('user', nickname = nickname))
+    session.add(u)
+    session.commit()
+    flash('You have stopped following ' + nickname + '.')
+    return redirect(url_for('user', nickname = nickname))
 
 @app.route('/logout')
 def logout():

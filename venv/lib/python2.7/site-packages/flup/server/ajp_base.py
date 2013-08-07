@@ -36,15 +36,15 @@ import logging
 import errno
 import datetime
 import time
+import traceback
 
 # Unfortunately, for now, threads are required.
 import thread
 import threading
 
-__all__ = ['BaseAJPServer']
+from flup.server import NoDefault
 
-class NoDefault(object):
-    pass
+__all__ = ['BaseAJPServer']
 
 # Packet header prefixes.
 SERVER_PREFIX = '\x12\x34'
@@ -592,20 +592,30 @@ class Request(object):
             data = data[toWrite:]
             bytesLeft -= toWrite
 
+class TimeoutException(Exception):
+    pass
+
 class Connection(object):
     """
     A single Connection with the server. Requests are not multiplexed over the
     same connection, so at any given time, the Connection is either
     waiting for a request, or processing a single request.
     """
-    def __init__(self, sock, addr, server):
+    def __init__(self, sock, addr, server, timeout):
         self.server = server
         self._sock = sock
         self._addr = addr
+        self._timeout = timeout
 
         self._request = None
 
         self.logger = logging.getLogger(LoggerName)
+
+    def timeout_handler(self, signum, frame):
+        self.logger.error('Timeout Exceeded')
+        self.logger.error("\n".join(traceback.format_stack(frame)))
+
+        raise TimeoutException
 
     def run(self):
         self.logger.debug('Connection starting up (%s:%d)',
@@ -703,10 +713,20 @@ class Connection(object):
         if req.input.bytesAvailForAdd():
             self.processInput()
 
+        # If there is a timeout
+        if self._timeout:
+            old_alarm = signal.signal(signal.SIGALRM, self.timeout_handler)
+            signal.alarm(self._timeout)
+            
         # Run Request.
         req.run()
 
         self._request = None
+
+        # Restore old handler if timeout was given
+        if self._timeout:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_alarm)
 
     def _shutdown(self, pkt):
         """Not sure what to do with this yet."""
@@ -752,7 +772,7 @@ class BaseAJPServer(object):
     def __init__(self, application, scriptName='', environ=None,
                  multithreaded=True, multiprocess=False,
                  bindAddress=('localhost', 8009), allowedServers=NoDefault,
-                 loggingLevel=logging.INFO, debug=True):
+                 loggingLevel=logging.INFO, debug=False):
         """
         scriptName is the initial portion of the URL path that "belongs"
         to your application. It is used to determine PATH_INFO (which doesn't
@@ -940,7 +960,8 @@ class BaseAJPServer(object):
         all errors should be caught at the application level.
         """
         if self.debug:
-            request.startResponse(200, 'OK', [('Content-Type', 'text/html')])
+            request.startResponse(500, 'Internal Server Error',
+                                  [('Content-Type', 'text/html')])
             import cgitb
             request.write(cgitb.html(sys.exc_info()))
         else:
@@ -952,5 +973,6 @@ class BaseAJPServer(object):
 <p>An unhandled exception was thrown by the application.</p>
 </body></html>
 """
-            request.startResponse(200, 'OK', [('Content-Type', 'text/html')])
+            request.startResponse(500, 'Internal Server Error',
+                                  [('Content-Type', 'text/html')])
             request.write(errorpage)

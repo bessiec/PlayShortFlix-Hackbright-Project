@@ -37,6 +37,7 @@ import signal
 import datetime
 import os
 import warnings
+import traceback
 
 # Threads are required. If you want a non-threaded (forking) version, look at
 # SWAP <http://www.idyll.org/~t/www-tools/wsgi/>.
@@ -45,8 +46,7 @@ import threading
 
 __all__ = ['BaseSCGIServer']
 
-class NoDefault(object):
-    pass
+from flup.server import NoDefault
 
 # The main classes use this name for logging.
 LoggerName = 'scgi-wsgi'
@@ -198,17 +198,27 @@ class Request(object):
                           handlerTime.seconds +
                           handlerTime.microseconds / 1000000.0)
 
+class TimeoutException(Exception):
+    pass
+
 class Connection(object):
     """
     Represents a single client (web server) connection. A single request
     is handled, after which the socket is closed.
     """
-    def __init__(self, sock, addr, server):
+    def __init__(self, sock, addr, server, timeout):
         self._sock = sock
         self._addr = addr
         self.server = server
+        self._timeout = timeout
 
         self.logger = logging.getLogger(LoggerName)
+
+    def timeout_handler(self, signum, frame):
+        self.logger.error('Timeout Exceeded')
+        self.logger.error("\n".join(traceback.format_stack(frame)))
+
+        raise TimeoutException
 
     def run(self):
         if len(self._addr) == 2:
@@ -264,11 +274,22 @@ class Connection(object):
         # Allocate Request
         req = Request(self, environ, input, output)
 
+        # If there is a timeout
+        if self._timeout:
+            old_alarm = signal.signal(signal.SIGALRM, self.timeout_handler)
+            signal.alarm(self._timeout)
+            
         # Run it.
         req.run()
 
         output.close()
         input.close()
+
+        # Restore old handler if timeout was given
+        if self._timeout:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_alarm)
+
 
 class BaseSCGIServer(object):
     # What Request class to use.
@@ -278,7 +299,7 @@ class BaseSCGIServer(object):
                  multithreaded=True, multiprocess=False,
                  bindAddress=('localhost', 4000), umask=None,
                  allowedServers=NoDefault,
-                 loggingLevel=logging.INFO, debug=True):
+                 loggingLevel=logging.INFO, debug=False):
         """
         scriptName is the initial portion of the URL path that "belongs"
         to your application. It is used to determine PATH_INFO (which doesn't
@@ -501,10 +522,13 @@ class BaseSCGIServer(object):
         if scriptName is NoDefault:
             # Pull SCRIPT_NAME/PATH_INFO from environment, with empty defaults
             if not environ.has_key('SCRIPT_NAME'):
-                environ['SCRIPT_INFO'] = ''
+                environ['SCRIPT_NAME'] = ''
             if not environ.has_key('PATH_INFO') or not environ['PATH_INFO']:
                 if reqUri is not None:
-                    environ['PATH_INFO'] = reqUri[0]
+                    scriptName = environ['SCRIPT_NAME']
+                    if not reqUri[0].startswith(scriptName):
+                        self.logger.warning('SCRIPT_NAME does not match request URI')
+                    environ['PATH_INFO'] = reqUri[0][len(scriptName):]
                 else:
                     environ['PATH_INFO'] = ''
         else:
@@ -529,7 +553,8 @@ class BaseSCGIServer(object):
         """
         if self.debug:
             import cgitb
-            request.stdout.write('Content-Type: text/html\r\n\r\n' +
+            request.stdout.write('Status: 500 Internal Server Error\r\n' +
+                                 'Content-Type: text/html\r\n\r\n' +
                                  cgitb.html(sys.exc_info()))
         else:
             errorpage = """<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
@@ -540,5 +565,6 @@ class BaseSCGIServer(object):
 <p>An unhandled exception was thrown by the application.</p>
 </body></html>
 """
-            request.stdout.write('Content-Type: text/html\r\n\r\n' +
+            request.stdout.write('Status: 500 Internal Server Error\r\n' +
+                                 'Content-Type: text/html\r\n\r\n' +
                                  errorpage)

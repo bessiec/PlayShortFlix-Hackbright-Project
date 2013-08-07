@@ -11,33 +11,17 @@ session = scoped_session(sessionmaker(bind= engine,
                                         autocommit= False,
                                         autoflush = False))
 
-
 Base = declarative_base()
 Base.query = session.query_property()
 
 ROLE_USER = 0
 ROLE_ADMIN = 1
 
+
 followers = Table('user_followers', Base.metadata,
     Column('follower_id', Integer, ForeignKey('users.id'), primary_key=True),
     Column('followed_id', Integer, ForeignKey('users.id'), primary_key=True)
 )
-
-# class Users_Followers(Base):
-#     __tablename__ = "user_followers"
-
-#     id = Column(Integer, primary_key = True)
-#     follower_id = Column(Integer, ForeignKey('users.id'))
-#     followed_id = Column(Integer, ForeignKey('users.id'))
-
-    # followers = relationship('User',
-    #     primaryjoin = "user_followers.follower_id == users.id",
-    #     # backref=backref("following", order_by=id)
-    #     )
-
-    # followed =  relationship('User',
-    #     primaryjoin = "user_followers.followed_id == users.id",
-    #     backref=backref("followed", order_by=id))
 
 class User(Base):
 #users defined on database structure for playshortflix and for Flask megatutorial
