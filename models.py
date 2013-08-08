@@ -5,6 +5,7 @@ from sqlalchemy import Column, Integer, String, DateTime, SmallInteger, Text
 from sqlalchemy import ForeignKey, Table
 from sqlalchemy.orm import relationship, backref
 from hashlib import md5
+import flask.ext.whooshalchemy as whooshalchemy
 
 engine = create_engine("sqlite:///app.db", echo=True)
 session = scoped_session(sessionmaker(bind= engine,
@@ -34,16 +35,12 @@ class User(Base):
     posts = relationship('Post', backref = 'author', lazy = 'dynamic')
     about_me = Column(String(140))
     last_seen = Column(DateTime)
-
-
     followed = relationship('User', 
         secondary = followers, 
         primaryjoin = (followers.c.follower_id == id), 
         secondaryjoin = (followers.c.followed_id == id), 
         backref = backref('followers', lazy = 'dynamic'), 
         lazy = 'dynamic')
-
-    # playlists = relationship('Playlists', backref = 'users.id', lazy = 'dynamic')
     # rating = Column(Integer, unique = False)
     # times_viewed = Column(Integer, unique = False)
     # movies_favorited = Column(Integer, unique = False)
@@ -100,6 +97,7 @@ class User(Base):
 
 class Post(Base):
     __tablename__ = "posts"
+    __searchable__ = ['body']
 
     id = Column(Integer, primary_key = True)
     body = Column(String(140))
@@ -110,39 +108,45 @@ class Post(Base):
         return '<Post %r>' % (self.body)
 
 
-# class Playlists(Base):
-#     __tablename__ = "playlists"
+#This association class ties films to playlists and other metadata
+class Playlist_Entry(Base):
+    __tablename__ = "playlist_entries"
+    
+    id = Column(Integer, primary_key = True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    playlists = Column(Integer, ForeignKey('playlists.id'), primary_key = True)
+    film_id = Column(Integer, ForeignKey('films.id'), primary_key = True)
+    extra_data = Column(String(50))
+    order_of_plays = Column(Integer, unique = False)
+    films = relationship("Films")
+    # multiple_movies = Column(String(140), unique = False)
+    # playlist_disqus = Column(String(140), unique = False)
 
-#     id = Column(Integer, primary_key = True)
-#     user_id = Column(Integer, ForeignKey('user.id'))
-#     multiple_movies = Column(String(140), unique = False)
-#     multiple_movies = Column(String(140), unique = False)
-#     order_of_plays = Column(Integer, unique = False)
-#     playlist_disqus = Column(String(140), unique = False)
+#making master playlist as parent 
+class Playlists(Base):
+    __tablename__ = "playlists"
 
-    # user = relationship("User",
-    #     backref=backref("playlists", order_by=user_id))
+    id = Column(Integer, primary_key = True)
+    playlists_entries = relationship('Playlist_Entry')
 
-# class Movies(Base):
-#     id = Column(Integer, primary_key = True)
-#     __tablename__ = "movies"
-#     url = Column(String(140))
-#     link_type = Column(String(140))
-#     description = Column(String(140))
-#     length = Column(String(140))
-#     source = Column(String(140))
-#     theme = Column(String(140))
-#     festival = Column(String(140))
-#     director = Column(String(140))
-#     product = Column(String(140))
-#     actor = Column(String(140))
-#     movie_disqus = Column(String(140))
+class Films(Base):
+    __tablename__ = "films"
+    
+    id = Column(Integer, primary_key = True)
+    url = Column(Text)
+    title = Column(Text)
+    # link_type = Column(String(140))
+    # description = Column(String(140))
+    # length = Column(String(140))
+    # source = Column(String(140))
+    # theme = Column(String(140))
+    # festival = Column(String(140))
+    # director = Column(String(140))
+    # product = Column(String(140))
+    # actor = Column(String(140))
+    # movie_disqus = Column(String(140))
 
-# # joining
-# class Playlist_movies(Base)
-#     playlist_id
-#     movies_id 
-#     order_of_plays
+
 
 def main():
     """ In case this is needed """

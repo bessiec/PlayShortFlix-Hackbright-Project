@@ -1,0 +1,12 @@
+<!-- extend base layout -->
+
+
+{% extends "base.html" %}
+   {% block content %}
+            <h1>Playlist</h1>
+  		{% for film in film_list %} 
+
+
+  			<h2> {{ film.title }}, {{ film.url }}</h2>
+  			{% endfor %}
+{% endblock %}

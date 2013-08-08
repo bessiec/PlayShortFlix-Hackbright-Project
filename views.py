@@ -157,10 +157,7 @@ def user(nickname):
     if user == None:
         flash('User ' + nickname + ' not found.')
         return redirect(url_for('index'))
-    posts = [
-        { 'author': user, 'body': 'Test post #1' },
-        { 'author': user, 'body': 'Test post #2' }
-    ]
+    posts = user.posts
     return render_template('user.html',
         user = user,
         posts = posts)
@@ -230,6 +227,12 @@ def unfollow(nickname):
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+@app.route('/films')
+def show_films():
+    film_list = models.session.query(models.Films).all()
+    return render_template('playlists.html', film_list = film_list) 
+
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
