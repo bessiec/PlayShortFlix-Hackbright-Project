@@ -109,33 +109,36 @@ class Post(Base):
 
 
 #This association class ties films to playlists and other metadata
-class Playlist_Entry(Base):
+class Playlist_Entry(Base): 
     __tablename__ = "playlist_entries"
     
     id = Column(Integer, primary_key = True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    playlists = Column(Integer, ForeignKey('playlists.id'), primary_key = True)
-    film_id = Column(Integer, ForeignKey('films.id'), primary_key = True)
-    extra_data = Column(String(50))
-    order_of_plays = Column(Integer, unique = False)
-    films = relationship("Films")
+    playlist_id = Column(Integer, ForeignKey('playlists.id'))
+    film_id = Column(Integer, ForeignKey('films.id'))
+    playlist_name = Column(String(140))
+    play_order = Column(Integer, unique = False)
+    playlists = relationship('Playlists', backref="playlists_entries", uselist=True)
+    films = relationship('Films', backref="playlists_entries", uselist=True)
+
     # multiple_movies = Column(String(140), unique = False)
     # playlist_disqus = Column(String(140), unique = False)
 
 #making master playlist as parent 
 class Playlists(Base):
     __tablename__ = "playlists"
-
     id = Column(Integer, primary_key = True)
-    playlists_entries = relationship('Playlist_Entry')
+    user_id = Column(Integer, ForeignKey('users.id'))
+    # playlist_entries_id = Column(Integer, ForeignKey('playlist_entries.id'))
+    # film_id = Column(Integer, ForeignKey('films.id'))
+    playlist_entries = relationship('Playlist_Entry')
 
 class Films(Base):
     __tablename__ = "films"
-    
     id = Column(Integer, primary_key = True)
     url = Column(Text)
     title = Column(Text)
-    # link_type = Column(String(140))
+    link_type = Column(String(140))
+    embed = Column(Text)
     # description = Column(String(140))
     # length = Column(String(140))
     # source = Column(String(140))
@@ -147,10 +150,42 @@ class Films(Base):
     # movie_disqus = Column(String(140))
 
 
-
 def main():
-    """ In case this is needed """
-    pass
+    user = User(nickname='bessie', email='oysteromelette@gmail.com')
+    playlist1 = Playlists(user_id=user.id)
+    arrival = Films(title='The Arrival', url="http://www.youtube.com/watch?v=uQ5TDW_rc7w")
+    shanghai_love_market = Films(title='Shanghai Love Market', url='http://www.youtube.com/watch?v=8-NosOJkvNQ')
+    parachute_kids = Films(title='Parachute Kids', url='http://www.youtube.com/watch?v=j2F5gaPK6k4')
+    seconds_laughter = Films(title="2 Seconds After Laughter", url='http://www.youtube.com/watch?v=j2F5gaPK6k4')
+    life = Films(title="I Held My Life in Both Hands", url="http://www.youtube.com/watch?v=5L-uQaDxCnI")
+    session.add(user)
+    session.add(playlist1)
+    session.add(arrival)
+    session.add(life)
+    session.add(parachute_kids)
+    session.add(seconds_laughter)
+    session.add(shanghai_love_market)
+    session.commit()
+    session.refresh(user)
+    session.refresh(playlist1)
+    session.refresh(arrival)
+    session.refresh(shanghai_love_market)
+
+
+    p1 = Playlist_Entry(playlist_id=playlist1.id, playlist_name="test1", film_id=arrival.id, play_order=1)
+    p2 = Playlist_Entry(playlist_id=playlist1.id, playlist_name="test1", film_id=life.id, play_order=2)
+    p3 = Playlist_Entry(playlist_id=playlist1.id, playlist_name="test1", film_id=parachute_kids.id, play_order=3)
+    p4 = Playlist_Entry(playlist_id=playlist1.id, playlist_name="test1", film_id=seconds_laughter.id, play_order=4)
+    p5 = Playlist_Entry(playlist_id=playlist1.id, playlist_name="test1", film_id=shanghai_love_market.id, play_order=5)
+
+    session.add(p1)
+    session.add(p2)
+    session.add(p3)
+    session.add(p4)
+    session.add(p5)
+    session.commit()
+
+
 
 if __name__ == "__main__":
     main()
