@@ -228,10 +228,26 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@app.route('/films')
-def show_films():
-    film_list = models.session.query(models.Films).all()
-    return render_template('playlists.html', film_list = film_list) 
+#Page that shows all current playlists and their associated films
+@app.route('/playlists')
+def show_playlists():
+    playlists = models.session.query(models.Playlists).all()
+    return render_template('playlists.html', playlists=playlists) 
+
+#creating the page to create playlists that shows checkbox input
+@app.route('/create_playlist')
+def create_playlist():
+    select_films = models.session.query(models.Films).all()
+    return render_template("create_playlist.html", select_films=select_films)
+
+#adding new playlist name and films to db
+@app.route('/make_playlist')
+def make_playlist():
+    new_playlist_name = request.args.get("playlist_name")
+    added_film = request.args.get("added_film")
+    models.session.add(models.Playlist_Entry(playlist_name=new_playlist_name, film_title=added_film)) 
+    models.session.commit()
+    return "Playlist Successfully Created!"
 
 
 @app.teardown_appcontext

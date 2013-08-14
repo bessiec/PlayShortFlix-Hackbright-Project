@@ -11,7 +11,7 @@
 			{% for entry in playlist.playlist_entries %}
 				{% for film in entry.films %}
           <h2> {{ entry.playlist_name }}
-	  				<h2> {{ film.title }} ,  {{ film.url }}</h2>	
+	  				<h2> {{ film.title }} ,  {{ film.url }}, {{ film.embed }}</h2>	
   				{% endfor %}
   			{% endfor %}
   		{% endfor %}
