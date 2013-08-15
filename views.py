@@ -158,7 +158,7 @@ def user(nickname):
         flash('User ' + nickname + ' not found.')
         return redirect(url_for('index'))
     posts = user.posts
-    playlists = models.session.query(models.Playlists).all()
+    playlists = models.session.query(models.Playlists).filter_by(user_id=g.user.id)
     return render_template('user.html',
         user = user,
         posts = posts,

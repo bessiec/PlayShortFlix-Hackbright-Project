@@ -12,7 +12,6 @@
              {% for entry in playlist.playlist_entries %}
                 {{ entry }}
                 {% for film in entry.films %}
-                    {{ film }}
                     {{ film.title }} <br>
                     {{ film.embed }}
                 {% endfor %}
