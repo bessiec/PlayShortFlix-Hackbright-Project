@@ -1,3 +1,5 @@
+#explain all of these
+
 import os
 from flask import Flask, render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
@@ -12,6 +14,7 @@ import models
 
 app = Flask(__name__)
 
+#find out exact what all of this is
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
@@ -20,7 +23,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 oid = OpenID(app, os.path.join(basedir, 'tmp'))
 
 app.csrf_enabled = True
-app.secret_key = "apocalypsenow12343heartofdarkness"
+app.secret_key = "rainbowssunshineunicorns2512351"
 
 
 POSTS_PER_PAGE = 3 #pagination
@@ -80,7 +83,6 @@ def index(page = 1):
         flash('Your post is now live!')
         return redirect(url_for('index'))
     posts = g.user.followed_posts()
-    print "POSTS HERE", posts
     return render_template('index.html',
         title = 'Home',
         form = form,
@@ -117,6 +119,7 @@ def edit():
     return render_template('edit.html',
         form = form)
 
+#Write out what this does 
 @oid.after_login
 def after_login(resp):
     if resp.email is None or resp.email == "":
@@ -129,20 +132,17 @@ def after_login(resp):
             nickname = resp.email.split('@')[0]
         nickname = User.make_unique_nickname(nickname)
         user = User(nickname = nickname, email = resp.email, role = ROLE_USER)
-        session.add(user)
-        session.commit()
+        models.session.add(user)
+        models.session.commit()
         # have the user follow him/herself
-        session.add(user.follow(user))
-        session.commit()
+        models.session.add(user.follow(user))
+        models.session.commit()
     remember_me = False
     if 'remember_me' in session:
         remember_me = session['remember_me']
         session.pop('remember_me', None)
     login_user(user, remember = remember_me)
     return redirect(request.args.get('next') or url_for('index'))
-
-# Do I need to take out these dbs as well?  
-
     remember_me = False
     if 'remember_me' in session:
         remember_me = session['remember_me']
@@ -158,33 +158,12 @@ def user(nickname):
         flash('User ' + nickname + ' not found.')
         return redirect(url_for('index'))
     posts = user.posts
+    playlists = models.session.query(models.Playlists).all()
     return render_template('user.html',
         user = user,
-        posts = posts)
+        posts = posts,
+        playlists = playlists)
 
-@oid.after_login
-def after_login(resp):
-    if resp.email is None or resp.email == "":
-        flash('Invalid login.  Please try again.')
-        redirect(url_for('login'))
-    user = User.query.filter_by(email = resp.email).first()
-    if user is None:
-        nickname = resp.nickname
-        if nickname is None or nickname == "":
-            nickname = resp.email.split("@")[0]
-        nickname = User.make_unique_nickname(nickname)
-        user = User(nickname = nickname, email = resp.email, role = ROLE_USER)
-        session.add(user)
-        session.commit()
-        #have the user follow self
-        session.add(user.follow(user))
-        session.commit()
-    remember_me = False
-    if 'remember_me' in session:
-        remember_me = session['remember_me']
-        session.pop('remember_me', None)
-    login_user(user, remember = remember_me)
-    return redirect(request.args.get('next') or url_for('index'))
 
 #functions the follow and unfollow a user
 @app.route('/follow/<nickname>')
@@ -196,11 +175,11 @@ def follow(nickname):
     if user == g.user:
         flash('You can\'t follow yourself!')
         return redirect(url_for('user', nickname = nickname))
-    u = g.user.follow(user)
-    if u is None:
+    follow_user = g.user.follow(user)
+    if follow_user is None:
         flash('Cannot follow ' + nickname + '.')
         return redirect(url_for('user', nickname = nickname))
-    session.add(u)
+    session.add(follow_user)
     session.commit()
     flash('You are now following ' + nickname + '!')
     return redirect(url_for('user', nickname = nickname))
@@ -234,18 +213,35 @@ def show_playlists():
     playlists = models.session.query(models.Playlists).all()
     return render_template('playlists.html', playlists=playlists) 
 
+@app.route('/films')
+def show_films():
+    all_films = models.session.query(models.Films).all()
+    return render_template("films.html",all_films=all_films)
 #creating the page to create playlists that shows checkbox input
+
 @app.route('/create_playlist')
 def create_playlist():
     select_films = models.session.query(models.Films).all()
     return render_template("create_playlist.html", select_films=select_films)
 
-#adding new playlist name and films to db
+#adding new playlist name and films to db - > collapse this into create_playlist 
 @app.route('/make_playlist')
 def make_playlist():
     new_playlist_name = request.args.get("playlist_name")
     added_film = request.args.get("added_film")
-    models.session.add(models.Playlist_Entry(playlist_name=new_playlist_name, film_title=added_film)) 
+    added_playlist = models.Playlists(title=new_playlist_name, user_id=g.user.id)
+    models.session.add(added_playlist) 
+    models.session.commit()
+    models.session.refresh(added_playlist)
+
+    play_order = 0
+    for argument in request.args:
+        if argument[0:10] == "added_film":
+            request.args[argument]
+            new_playlist_row = models.Playlist_Entry(playlist_id=added_playlist.id,
+                film_id=request.args[argument], play_order=play_order)
+            play_order += 1
+            models.session.add(new_playlist_row)
     models.session.commit()
     return "Playlist Successfully Created!"
 

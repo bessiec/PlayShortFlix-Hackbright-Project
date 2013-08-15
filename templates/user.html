@@ -25,6 +25,18 @@
     {% include 'post.html' %}
 {% endfor %}
 
+
+    {% for playlist in playlists %} 
+        <h2> {{ playlist.title }}  </h2>
+             {% for entry in playlist.playlist_entries %}
+                {% for film in entry.films %}
+                    {{ film.title }} <br>
+                    {{ film.embed }}
+                {% endfor %}
+            {% endfor %}
+    {% endfor %}
+
+
 <!-- if I ever get paginate working:
 {% if posts.has_prev %}<a href="{{ url_for('user', nickname = user.nickname, page = posts.prev_num) }}"><< Newer posts</a>{% else %}<< Newer posts{% endif %} | 
 {% if posts.has_next %}<a href="{{ url_for('user', nickname = user.nickname, page = posts.next_num) }}">Older posts >></a>{% else %}Older posts >>{% endif %}

@@ -1,3 +1,4 @@
+#figure out what each of these are 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,12 +14,14 @@ session = scoped_session(sessionmaker(bind= engine,
                                         autocommit= False,
                                         autoflush = False))
 
+#figure out what this does
 Base = declarative_base()
 Base.query = session.query_property()
 
 def create_db():
     Base.metadata.create_all(engine)
 
+#figure out what this does
 ROLE_USER = 0
 ROLE_ADMIN = 1
 
@@ -79,6 +82,7 @@ class User(Base):
     def __repr__(self):
         return '<User %r>' % (self.nickname)    
 
+#what is hexdigest 
     def avatar(self, size):
         return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
 
@@ -119,12 +123,10 @@ class Playlist_Entry(Base):
     id = Column(Integer, primary_key = True)
     playlist_id = Column(Integer, ForeignKey('playlists.id'))
     film_id = Column(Integer, ForeignKey('films.id'))
-    playlist_name = Column(Text)
     play_order = Column(Integer, unique = False)
     playlists = relationship('Playlists', backref="playlists_entries", uselist=True)
-    films = relationship('Films', backref="playlists_entries", uselist=True)
-    # title = relationship('Films', backref="playlists_entries", uselist=True, foreign_keys=[film_title])
 
+    #future metadata
     # multiple_movies = Column(String(140), unique = False)
     # playlist_disqus = Column(String(140), unique = False)
 
@@ -135,6 +137,8 @@ class Playlists(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     playlist_entries = relationship('Playlist_Entry')
     title = Column(String(140))
+
+    #future metadata
     # playlist_entries_id = Column(Integer, ForeignKey('playlist_entries.id'))
     # film_id = Column(Integer, ForeignKey('films.id'))
 
@@ -146,6 +150,8 @@ class Films(Base):
     link_type = Column(String(140))
     embed = Column(Text)
     genre = Column(Text)
+
+    # future metadata
     # description = Column(String(140))
     # length = Column(String(140)).
     # source = Column(String(140))
@@ -162,36 +168,6 @@ def main():
     session.add(user)
     session.commit()
     session.refresh(user)
-
-#Initial test data in first iteration
-    # playlist1 = Playlists(user_id=user.id)
-    # # arrival = Films(title='The Arrival', url="http://www.youtube.com/watch?v=uQ5TDW_rc7w", embed='<iframe width="420" height="315" src="//www.youtube.com/embed/uQ5TDW_rc7w" frameborder="0" allowfullscreen></iframe>')
-    # # shanghai_love_market = Films(title='Shanghai Love Market', url='http://www.youtube.com/watch?v=8-NosOJkvNQ', embed='<iframe width="420" height="315" src="//www.youtube.com/embed/8-NosOJkvNQ" frameborder="0" allowfullscreen></iframe>')
-    # # parachute_kids = Films(title='Parachute Kids', url='http://www.youtube.com/watch?v=j2F5gaPK6k4', embed='<iframe width="560" height="315" src="//www.youtube.com/embed/j2F5gaPK6k4" frameborder="0" allowfullscreen></iframe>')
-    # # seconds_laughter = Films(title="2 Seconds After Laughter", url='http://www.youtube.com/watch?v=j2F5gaPK6k4', embed='<iframe width="560" height="315" src="//www.youtube.com/embed/hmWNOqcIHQ8" frameborder="0" allowfullscreen></iframe>')
-    # # life = Films(title="I Held My Life in Both Hands", url="http://www.youtube.com/watch?v=5L-uQaDxCnI", embed='<iframe width="560" height="315" src="//www.youtube.com/embed/hmWNOqcIHQ8" frameborder="0" allowfullscreen></iframe>')
-
-    # session.add(playlist1)
-    # # session.add(arrival)
-    # # session.add(life)
-    # # session.add(parachute_kids)
-    # # session.add(seconds_laughter)
-    # # session.add(shanghai_love_market)
-
-    # session.refresh(playlist1)
-    # # session.refresh(arrival)
-    # # session.refresh(shanghai_love_market)
-    # p1 = Playlist_Entry(playlist_id=playlist1.id, playlist_name="test1", film_id=arrival.id, play_order=1)
-    # p2 = Playlist_Entry(playlist_id=playlist1.id, playlist_name="test1", film_id=life.id, play_order=2)
-    # p3 = Playlist_Entry(playlist_id=playlist1.id, playlist_name="test1", film_id=parachute_kids.id, play_order=3)
-    # p4 = Playlist_Entry(playlist_id=playlist1.id, playlist_name="test1", film_id=seconds_laughter.id, play_order=4)
-    # p5 = Playlist_Entry(playlist_id=playlist1.id, playlist_name="test1", film_id=shanghai_love_market.id, play_order=5)
-    # session.add(p1)
-    # session.add(p2)
-    # session.add(p3)
-    # session.add(p4)
-    # session.add(p5)
-    # session.commit()
 
 
 

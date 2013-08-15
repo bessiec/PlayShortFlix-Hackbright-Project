@@ -1,0 +1,5 @@
+*.pyc
+venv/
+tmp/
+venv.BAK/
+app\ DEAD/app.db

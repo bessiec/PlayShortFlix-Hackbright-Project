@@ -6,20 +6,15 @@
 
     <title>PlayShortFlix</title>
     {% endif %}
-  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
-
-       <meta charset="utf-8">
 
 
   </head>
   <body>
-        <script src="http://code.jquery.com/jquery.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <div>Microblog:
+
+    <div>PlayShortFlix:
         <a href="{{ url_for('index') }}">Home</a>
+        | <a href="/films">See All Films </a>
+        | <a href="/playlists">See All Playlists </a>
         {% if g.user.is_authenticated() %}
         | <a href="{{ url_for('user', nickname = g.user.nickname) }}">Your Profile</a>
         | <a href="{{ url_for('logout') }}">Logout</a>

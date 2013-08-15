@@ -3,18 +3,23 @@
 
 {% extends "base.html" %}
    {% block content %}
-            <h1>Playlist</h1>	
+            <h1>All Playlists and Films </h1>	
 
 
+  <center>
+    {% for playlist in playlists %} 
+        <h2> {{ playlist.title }}  </h2>
+             {% for entry in playlist.playlist_entries %}
+                {{ entry }}
+                {% for film in entry.films %}
+                    {{ film }}
+                    {{ film.title }} <br>
+                    {{ film.embed }}
+                {% endfor %}
+            {% endfor %}
+    {% endfor %}
 
-  		{% for playlist in playlists %} 
-			{% for entry in playlist.playlist_entries %}
-				{% for film in entry.films %}
-          <h2> {{ entry.playlist_name }}
-	  				<h2> {{ film.title }} ,  {{ film.url }}, {{ film.embed }}</h2>	
-  				{% endfor %}
-  			{% endfor %}
-  		{% endfor %}
 
+  </center>
 
 {% endblock %}
