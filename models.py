@@ -124,8 +124,8 @@ class Playlist_Entry(Base):
     playlist_id = Column(Integer, ForeignKey('playlists.id'))
     film_id = Column(Integer, ForeignKey('films.id'))
     play_order = Column(Integer, unique = False)
-    playlists = relationship('Playlists', backref="playlists_entries", uselist=True)
-    films = relationship('Films', backref="films", uselist=True)
+    playlist = relationship('Playlists', backref="playlists_entry")
+    film = relationship('Films', backref="entry")
 
     #future metadata
     # multiple_movies = Column(String(140), unique = False)

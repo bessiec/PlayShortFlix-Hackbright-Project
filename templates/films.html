@@ -7,7 +7,7 @@
 	<center>
   		{% for film in all_films %} 
   			<h2> {{ film.title }} </h2> <br>
-  				{{ film.embed }} 
+  				{{ film.embed| safe }} 
   		{% endfor %}
   	</center>
 
