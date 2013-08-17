@@ -52,6 +52,7 @@
                 <li><a href="/films">See All Films </a></l1>
                 <li><a href="/playlists">See All Playlists </a></l1>
                       {% if g.user.is_authenticated() %}
+                <li><a href="/create_playlist">Create a Playlist</a></li>
                 <li><a href="{{ url_for('user', nickname = g.user.nickname) }}">Your Profile</a></li>
                 <li><a href="{{ url_for('logout') }}">Logout</a></li>
             </ul>

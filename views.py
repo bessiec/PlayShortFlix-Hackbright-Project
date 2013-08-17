@@ -26,8 +26,6 @@ app.csrf_enabled = True
 app.secret_key = "rainbowssunshineunicorns2512351"
 
 
-POSTS_PER_PAGE = 3 #pagination
-
 #CSRF_ENABLED setting activates the cross-site request forgery prevention.
 #Secret key is used to create a cryptographic token that is used to validate a form.
 
@@ -82,7 +80,7 @@ def index(page = 1):
         models.session.commit()
         flash('Your post is now live!')
         return redirect(url_for('index'))
-    posts = g.user.followed_posts()
+    posts = g.user.posts
     return render_template('index.html',
         title = 'Home',
         form = form,
@@ -158,7 +156,7 @@ def user(nickname):
         flash('User ' + nickname + ' not found.')
         return redirect(url_for('index'))
     posts = user.posts
-    playlists = models.session.query(models.Playlists).filter_by(user_id=g.user.id)
+    playlists = models.session.query(models.Playlists).filter_by(user_id=g.user.id).all()
     return render_template('user.html',
         user = user,
         posts = posts,
@@ -243,7 +241,7 @@ def make_playlist():
             play_order += 1
             models.session.add(new_playlist_row)
     models.session.commit()
-    return "Playlist Successfully Created!"
+    return render_template("playlist_created.html")
 
 
 @app.teardown_appcontext

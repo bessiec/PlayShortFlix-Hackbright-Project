@@ -13,7 +13,7 @@
 
         {% for i in range(0, playlists| count) %}   
             <div class="span8">
-                <h2> {{ playlists[i].title }}  </h2>
+                <h2> {{ playlists[i].title }}  </h2><center>
                 <div id="Playlists-Slider{{i}}" class="carousel slide">
                     <ol class="carousel-indicators">
                         {% for j in range(0, playlists[i].playlist_entries| count) %}
@@ -33,7 +33,7 @@
                     <!-- Carousel nav -->
                     <a class="carousel-control left" href="#Playlists-Slider{{i}}" data-slide="prev">&lsaquo;</a>
                     <a class="carousel-control right" href="#Playlists-Slider{{i}}" data-slide="next">&rsaquo;</a>
-                </div>
+                </div></center>
             </div>
         {% endfor %}
   </div>
