@@ -1,4 +1,3 @@
-#figure out what each of these are 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -14,14 +13,13 @@ session = scoped_session(sessionmaker(bind= engine,
                                         autocommit= False,
                                         autoflush = False))
 
-#figure out what this does
 Base = declarative_base()
 Base.query = session.query_property()
 
 def create_db():
     Base.metadata.create_all(engine)
 
-#figure out what this does
+
 ROLE_USER = 0
 ROLE_ADMIN = 1
 
@@ -48,11 +46,6 @@ class User(Base):
         secondaryjoin = (followers.c.followed_id == id), 
         backref = backref('followers', lazy = 'dynamic'), 
         lazy = 'dynamic')
-    # rating = Column(Integer, unique = False)
-    # times_viewed = Column(Integer, unique = False)
-    # movies_favorited = Column(Integer, unique = False)
-    # bearer_token = Column(String(120), unique = True)
-    # twitter = Column(String(120), unique = True)
 
     @staticmethod
     def make_unique_nickname(nickname):
@@ -82,7 +75,6 @@ class User(Base):
     def __repr__(self):
         return '<User %r>' % (self.nickname)    
 
-#what is hexdigest 
     def avatar(self, size):
         return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
 
@@ -143,6 +135,7 @@ class Playlists(Base):
     # playlist_entries_id = Column(Integer, ForeignKey('playlist_entries.id'))
     # film_id = Column(Integer, ForeignKey('films.id'))
 
+#Where film metadata live
 class Films(Base):
     __tablename__ = "films"
     id = Column(Integer, primary_key = True)
@@ -163,7 +156,7 @@ class Films(Base):
     # actor = Column(String(140))
     # movie_disqus = Column(String(140))
 
-
+#seeding an inital user for test playlists
 def main():
     user = User(nickname='bessie', email='oysteromelette@gmail.com')
     session.add(user)

@@ -1,8 +1,11 @@
-from flask.ext.wtf import Form, TextField, BooleanField, TextAreaField
+#Building forms for my webapp 
+
+from flask.ext.wtf import Form, TextField, BooleanField, TextAreaField 
+#Importing form, text field, t/f field, and multi-text field
 from flask.ext.wtf import Required, Length
 from models import User
+#Importing all the models we need to make forms work 
 
-#We imported the Form, TextField, and BooleanField classes that we need 
 
 class LoginForm(Form):
     openid = TextField('openid', validators = [Required()])

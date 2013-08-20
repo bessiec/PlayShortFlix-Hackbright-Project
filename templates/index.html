@@ -25,7 +25,8 @@
     </table>
 </form>
 You're logged in!  Post messages to your user page or create a playlist.  
-{% for post in posts %}
+{% for post in posts
+ %}
     {% include 'post.html' %}
 {% endfor %}
 

@@ -2,16 +2,23 @@
   <head>
 
 
-<!--     Implementing  Bootstrap-->    
-    <link href='http://fonts.googleapis.com/css?family=Raleway:400,200' rel='stylesheet' type='text/css'>
+
+    <!--     Implementing  Bootstrap-->    
     <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Getting Google Font-->
+    <link href='http://fonts.googleapis.com/css?family=Raleway:400,200' rel='stylesheet' type='text/css'>
+
+    <!--Stylesheet with additional look and field elements-->
     <link href="/static/css/mycss.css" rel="stylesheet">
 
-<!-- Google Font -->
+    <!---calling jQuery CDN and back-up -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/jquery-1.7.2.min.js"><\/script>')</script>
 
 
 
@@ -26,13 +33,10 @@
   <body>
 
 
-      <!---calling jQuery CDN and back-up -->
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="js/jquery-1.7.2.min.js"><\/script>')</script>
 
 
 
-        <!--     Facebook Javascript SDK  -->
+        <!--     Facebook Javascript SDK-->
         <div id="fb-root"></div>
         <script>(function(d, s, id) {
           var js, fjs = d.getElementsByTagName(s)[0];
@@ -48,7 +52,6 @@
             <a class="brand" href="{{ url_for('index') }}">PlayShortFlix App</a>
             <ul class="nav">
              <li class="active"><a href="{{ url_for('index') }}">Home</a>
-         <!--         <a href="{{ url_for('index') }}">Home</a> -->
                 <li><a href="/films">See All Films </a></l1>
                 <li><a href="/playlists">See All Playlists </a></l1>
                       {% if g.user.is_authenticated() %}

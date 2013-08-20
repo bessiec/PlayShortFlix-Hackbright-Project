@@ -1,5 +1,3 @@
-#explain all of these
-
 import os
 from flask import Flask, render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import LoginManager, login_user, logout_user, current_user, login_required
@@ -14,7 +12,6 @@ import models
 
 app = Flask(__name__)
 
-#find out exact what all of this is
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'

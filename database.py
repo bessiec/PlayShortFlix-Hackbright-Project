@@ -1,3 +1,5 @@
+#Defunct database initializer as I was working on my webapp.  This functionality lives in my models.py file instead.
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base

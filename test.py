@@ -1,6 +1,9 @@
-import os
-import unittest
-from datetime import datetime, timedelta
+#This is the test file I was working on through the Flask megatutorial as I was going through to build a skeleton for my app and learn things: http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-vii-unit-testing
+#This is currently not functioning and has been abandoned since the scope of how I'm building my webapp diverged from the tutorial.
+
+import os 
+import unittest #python testing framework "pyunit" 
+from datetime import datetime, timedelta #importing datetime and timedela, which expresses diff between two datetimes
 
 import views, models
 from models import User, Post
